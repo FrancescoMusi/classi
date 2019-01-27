@@ -5,7 +5,7 @@ import time
 class Gold():
 	def __init__(self):
 		self.x = random.randint(0, field.x-1)
-		self.y = random.randint(0, field.x-1)
+		self.y = random.randint(0, field.y-1)
 
 
 class Player():
@@ -17,15 +17,6 @@ class Player():
 		self.cur_y = self.y
 		self.cur_hp = hp
 		self.max_hp = hp
-
-	def checkEntityOnAnother(self):
-		while True:
-			if self.x == monster.cur_x and self.y == monster.cur_y or self.x == gold.x and self.y == gold.y:
-				self.x = random.randint(0, field.x-1)
-				self.y = random.randint(0, field.y-1)		
-			else:
-				break
-	
 
 	def printStatus(self):
 		print("player hp: {}%".format(player.cur_hp))
@@ -54,13 +45,13 @@ class Enemy():
 		directions = 'wasd'
 		direction = random.choice(directions)
 
-		if direction == 'w' and monster.cur_x >= 0:
+		if direction == 'w' and monster.cur_x > 0:
 			self.cur_x -= 1
-		elif direction == 'a' and monster.cur_y >= 0:
+		elif direction == 'a' and monster.cur_y > 0:
 			self.cur_y -= 1
-		elif direction == 's' and monster.cur_x <= field.x:
+		elif direction == 's' and monster.cur_x < field.x-1:
 			self.cur_x += 1
-		elif direction == 'd' and monster.cur_y <= field.y:
+		elif direction == 'd' and monster.cur_y < field.y-1:
 			self.cur_y += 1
 	
 
@@ -82,6 +73,13 @@ class Field():
 				self.graphic_field[i].append([' '])
 
 	def printField(self, player):
+		while True:
+			if player.cur_x == monster.cur_x and player.cur_y == monster.cur_y or player.cur_x == gold.x and player.cur_y == gold.y:
+				player.cur_x = random.randint(0, field.x-1)
+				player.cur_y = random.randint(0, field.y-1)		
+			else:
+				break
+	
 		self.graphic_field[player.cur_x][player.cur_y] = ['P']
 		self.graphic_field[monster.cur_x][monster.cur_y] = ['M']
 		self.graphic_field[gold.x][gold.y] = ['G']
@@ -108,14 +106,13 @@ def printLose():
 		print('YOU LOSE  :)')
 		print('===========')
 		print('reastart in {}...'.format(3-(i+1)))
-		time.sleep(0.5)
+		time.sleep(1)
 		os.system('cls')
 
 #ISTANZE
 field = Field(10, 10)
 monster = Enemy(50)
 player = Player(100)
-
 gold = Gold()
 
 os.system('cls')
@@ -126,11 +123,10 @@ while True:
 		field.printField(player)
 		player.printStatus()
 		monster.move()
-		checkEntityOnAnother()
 
 		#prende in input la direzione
 		print()
-		direction = input("Direction (wasd) - Q per uscire: "+ str(player.cur_x) + ' ' + str(player.cur_y)).lower()
+		direction = input("Direction (wasd) - Q per uscire: ").lower()
 		player.move(direction)
 
 		if player.cur_x == monster.cur_x and player.cur_y == monster.cur_y:
