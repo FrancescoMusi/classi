@@ -7,14 +7,19 @@ class Gold():
 		self.x = random.randint(0, field.x-1)
 		self.y = random.randint(0, field.y-1)
 
+	def checkGoldOnPlayer(self):
+		while player.cur_x == self.x and player.cur_y == self.y:
+			player.cur_x = random.randint(0, field.x-1)
+			player.cur_y = random.randint(0, field.y-1)	
+			return True
+
+
 
 class Player():
 	def __init__(self, hp):
-		self.x = random.randint(0, field.x-1)
-		self.y = random.randint(0, field.y-1)
+		self.cur_x = random.randint(0, field.x-1)
+		self.cur_y = random.randint(0, field.y-1)
 
-		self.cur_x = self.x
-		self.cur_y = self.y
 		self.cur_hp = hp
 		self.max_hp = hp
 
@@ -27,9 +32,9 @@ class Player():
 			self.cur_x -= 1
 		elif direction == 'a' and player.cur_y >= 1:
 			self.cur_y -= 1
-		elif direction == 's' and player.cur_x <= field.x-1:
+		elif direction == 's' and player.cur_x < field.x-1:
 			self.cur_x += 1
-		elif direction == 'd' and player.cur_y <= field.y-1:
+		elif direction == 'd' and player.cur_y < field.y-1:
 			self.cur_y += 1
 
 
@@ -40,7 +45,13 @@ class Enemy():
 		self.cur_y = random.randint(0, field.y-1)
 		self.damage = damage
 
-		
+	def checkEnemyOnPlayer(self):
+		while player.cur_x == self.cur_x and player.cur_y == self.cur_y:
+			player.cur_x = random.randint(0, field.x-1)
+			player.cur_y = random.randint(0, field.y-1)	
+			return True
+
+
 	def move(self):
 		if self.cur_x > player.cur_x and self.cur_x > 0 and	self.cur_x-1 != ['G']:
 			self.cur_x -= 1
@@ -69,26 +80,28 @@ class Field():
 			for x in range(self.y):
 				self.graphic_field[i].append([' '])
 
-	def printField(self, player):
+	def printField(self):
 		while True:
-			if player.cur_x == monster1.cur_x and player.cur_y == monster1.cur_y or player.cur_x == gold.x and player.cur_y == gold.y or player.cur_x == monster2.cur_x and player.cur_y == monster2.cur_y or player.cur_x == boss.cur_x and player.cur_y == boss.cur_y:
-				player.cur_x = random.randint(0, field.x-1)
-				player.cur_y = random.randint(0, field.y-1)		
-			else:
+			self.graphic_field[player.cur_x][player.cur_y] = ['P']
+			self.graphic_field[monster1.cur_x][monster1.cur_y] = ['M']
+			self.graphic_field[monster2.cur_x][monster2.cur_y] = ['M']
+			self.graphic_field[boss.cur_x][boss.cur_y] = ['B']
+			self.graphic_field[gold.x][gold.y] = ['G']
+
+			self.counter = 0 
+			for i in self.graphic_field:
+				if i != [' ']:
+					self.counter += 1
+
+			if self.counter >= 4:
+				for y in self.graphic_field:
+					for x in y:
+						print(x, end = '')
+					print()
 				break
-	
-		self.graphic_field[player.cur_x][player.cur_y] = ['P']
 
-		self.graphic_field[monster1.cur_x][monster1.cur_y] = ['M']
-		self.graphic_field[monster2.cur_x][monster2.cur_y] = ['M']
-		self.graphic_field[boss.cur_x][boss.cur_y] = ['B']
 
-		self.graphic_field[gold.x][gold.y] = ['G']
 
-		for i in self.graphic_field:
-			for x in i:
-				print(x, end = '')
-			print()
 
 def printWin():
 	os.system('cls')
@@ -124,7 +137,7 @@ os.system('cls')
 while True:
 	while True:
 		field.createField()
-		field.printField(player)
+		field.printField()
 		player.printStatus()
 		monster1.move()
 		monster2.move()
@@ -136,20 +149,17 @@ while True:
 		direction = input("Direction (wasd) - Q per uscire: ").lower()
 		player.move(direction)
 
-		if player.cur_x == monster1.cur_x and player.cur_y == monster1.cur_y:
+		if monster1.checkEnemyOnPlayer() or monster2.checkEnemyOnPlayer():
 			monster1.attack(player)
 
-		if player.cur_x == monster2.cur_x and player.cur_y == monster2.cur_y:
-			monster2.attack(player)
-
-		if player.cur_x == boss.cur_x and player.cur_y == boss.cur_y:
+		if boss.checkEnemyOnPlayer():
 			boss.attack(player)
 
 		if player.cur_hp <= 0:
 			printLose()
 			break
 
-		if player.cur_x == gold.x and player.cur_y == gold.y:
+		if gold.checkGoldOnPlayer():
 			printWin()
 			break
 
